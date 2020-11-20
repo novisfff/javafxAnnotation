@@ -10,12 +10,12 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface FXScene {
+public @interface FxScene {
 
     /**
      * the name of this scene
      */
-    public String Name();
+    public String name();
 
     /**
      * the name of its parent scene

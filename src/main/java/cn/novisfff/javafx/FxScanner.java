@@ -3,6 +3,7 @@ package cn.novisfff.javafx;
 import cn.novisfff.javafxExample.Main;
 import org.omg.CORBA.ARG_OUT;
 
+import javax.xml.bind.SchemaOutputResolver;
 import java.io.DataOutput;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -137,10 +138,15 @@ public class FxScanner {
     /**
      * get all class File's class path
      */
-    private void getClassPath() {
-        String rootPath = primarySources.getPackage().getName();
+    private void getClassPath() throws URISyntaxException {
+        String packagePath = primarySources.getPackage().getName();
+        File file = new File(primarySources.getResource("").toURI());
+        String fileRoot = file.getPath() + File.separator;
         for (File classFile : classFiles) {
-            classPathList.add(rootPath + "." + classFile.getName().replace(".class", ""));
+            classPathList.add(packagePath + "." + classFile.getPath()
+                    .replace(fileRoot, "")
+                    .replace(File.separator, ".")
+                    .replace(".class", ""));
         }
     }
 
