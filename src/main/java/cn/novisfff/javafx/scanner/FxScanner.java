@@ -110,7 +110,7 @@ public class FxScanner {
     }
 
     /**
-     * sort allFile list, sear
+     * sort allFile list, search .class file and .xml file
      */
     private void sortFile() {
         Pattern classFilePattern = Pattern.compile(FileType.CLASS.getRegex());
