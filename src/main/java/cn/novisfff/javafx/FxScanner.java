@@ -1,5 +1,9 @@
-package cn.novisfff.javafx.scanner;
+package cn.novisfff.javafx;
 
+import cn.novisfff.javafxExample.Main;
+import org.omg.CORBA.ARG_OUT;
+
+import java.io.DataOutput;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -31,6 +35,11 @@ public class FxScanner {
      * .xml File
      */
     private List<File> xmlFiles = new ArrayList<>();
+
+    /**
+     * class List
+     */
+    private List<String> classPathList = new ArrayList<>();
 
     /**
      * the primary Source
@@ -79,6 +88,7 @@ public class FxScanner {
         URL resource = primarySources.getResource("");
         allFiles = scanFile(resource);
         sortFile();
+        getClassPath();
     }
 
     /**
@@ -124,6 +134,16 @@ public class FxScanner {
         }
     }
 
+    /**
+     * get all class File's class path
+     */
+    private void getClassPath() {
+        String rootPath = primarySources.getPackage().getName();
+        for (File classFile : classFiles) {
+            classPathList.add(rootPath + "." + classFile.getName().replace(".class", ""));
+        }
+    }
+
     public List<File> getAllFiles() {
         return allFiles;
     }
@@ -134,6 +154,19 @@ public class FxScanner {
 
     public List<File> getXmlFiles() {
         return xmlFiles;
+    }
+
+    public List<String> getClassPathList() {
+        return classPathList;
+    }
+
+    public static void main(String[] args) throws URISyntaxException {
+        FxScanner fxScanner = new FxScanner(Main.class);
+        fxScanner.scan();
+        List<String> classPathList = fxScanner.getClassPathList();
+        for (String s : classPathList) {
+            System.out.println(s);
+        }
     }
 
 }

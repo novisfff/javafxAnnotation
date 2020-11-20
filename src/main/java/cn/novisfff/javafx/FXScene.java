@@ -1,4 +1,4 @@
-package cn.novisfff.javafx.annotation;
+package cn.novisfff.javafx;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
