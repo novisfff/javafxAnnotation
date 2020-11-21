@@ -9,4 +9,5 @@ package cn.novisfff.javafx;
  */
 
 public class FxContainer {
+
 }
