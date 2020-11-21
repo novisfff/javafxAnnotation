@@ -6,11 +6,5 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<fx:root type="javafx.scene.layout.Pane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-    <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    </AnchorPane>
-   <children>
-      <BorderPane prefHeight="200.0" prefWidth="200.0" />
-      <ColorPicker layoutX="231.0" layoutY="132.0" />
-   </children>
+<fx:root type="javafx.scene.layout.FlowPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
 </fx:root>
