@@ -24,11 +24,20 @@ public class JavafxApplication {
 
     private static Pane root;
 
+    private static Stage primaryStage;
+
     public static synchronized Pane getRootInstance() {
         if (root == null) {
             throw new NullPointerException("root is null");
         }
         return root;
+    }
+
+    public static synchronized Stage getStageInstance() {
+        if (primaryStage == null) {
+            throw new NullPointerException("primaryStage is null");
+        }
+        return primaryStage;
     }
 
     public static synchronized void run(Class<?> primarySources, Stage primaryStage) {
