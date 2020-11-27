@@ -12,6 +12,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FxNode {
 
+    /**
+     * the parameter of this node
+     */
     public String[] parameter() default {};
+
+    /**
+     * the index of this node
+     */
+    public int index();
+
+    /**
+     * the number of this node
+     */
+    public int number() default 1;
 
 }

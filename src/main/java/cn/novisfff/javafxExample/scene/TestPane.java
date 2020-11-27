@@ -28,25 +28,25 @@ import java.io.IOException;
 @LoadFxml(fxmlFile = "testPane.fxml")
 public class TestPane extends FlowPane {
 
-    @FxNode(parameter = {"123"})
+    @FxNode(parameter = {"123"}, index = 1)
     private Node test(String s) {
         Label label = new Label(s);
         return label;
     }
 
-    @FxNode(parameter = {"456"})
+    @FxNode(parameter = {"456"}, index = 2)
     private Node abc4(String s) {
         Label label = new Label(s);
         return label;
     }
 
-    @FxNode(parameter = {"789"})
+    @FxNode(parameter = {"789"}, index = 3)
     private Node abc5(String s) {
         Label label = new Label(s);
         return label;
     }
 
-    @FxNode
+    @FxNode(index = 4)
     private Node nnn() {
         CheckBox checkBox = new CheckBox();
         return checkBox;
