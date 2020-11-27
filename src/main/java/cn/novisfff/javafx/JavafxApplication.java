@@ -26,6 +26,8 @@ public class JavafxApplication {
 
     private static Stage primaryStage;
 
+    private static FxContainer fxContainer;
+
     public static synchronized Pane getRootInstance() {
         if (root == null) {
             throw new NullPointerException("root is null");
@@ -52,52 +54,72 @@ public class JavafxApplication {
         primaryStage.show();
 
         FxScanner fxScanner = new FxScanner(primarySources);
+        fxContainer = FxContainer.getInstance();
+        fxContainer.addPane(new FxContainerPane("root", root, null));
+
         try {
             fxScanner.scan();
             List<String> classPathList = fxScanner.getClassPathList();
-            for (String s : classPathList) {
-                Class<?> aClass = Class.forName(s);
-
-                Pane pane = null;
-
-                LoadFxml loadFxml = aClass.getDeclaredAnnotation(LoadFxml.class);
-
-                if(loadFxml != null) {
-                    System.out.println("从Fxml初始化" + loadFxml.fxmlFile());
-                    pane = pane == null ? (Pane) aClass.newInstance() : pane;
-
-                    FXMLLoader fxmlLoader = new FXMLLoader(pane.getClass().getResource(loadFxml.fxmlFile()));
-                    fxmlLoader.setRoot(pane);
-                    fxmlLoader.setController(pane);
-                    try {
-                        fxmlLoader.load();
-                    } catch (IOException exception) {
-                        throw new RuntimeException(exception);
-                    }
-
-                }
-
-                FxPane annotation = aClass.getDeclaredAnnotation(FxPane.class);
-                if (annotation != null) {
-                    System.out.println(annotation.name() + "成功注入");
-                    pane = pane == null ? (Pane) aClass.newInstance() : pane;
-                    root.getChildren().add(pane);
-                    Method[] methods = aClass.getDeclaredMethods();
-                    for (Method method : methods) {
-                        FxNode fxNode = method.getDeclaredAnnotation(FxNode.class);
-                        if (fxNode != null) {
-                            System.out.println("识别到FxNode注解");
-                            method.setAccessible(true);
-                            Node node = (Node) method.invoke(pane, fxNode.parameter());
-                            pane.getChildren().add(node);
-                        }
-                    }
-                }
-            }
+            addPanes(classPathList);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    private static void addPanes(List<String> classPathList) throws Exception {
+        for (String classPath : classPathList) {
+
+            Class<?> aClass = Class.forName(classPath);
+
+            FxPane annotation = aClass.getDeclaredAnnotation(FxPane.class);
+            if (annotation != null) {
+
+                Pane pane = getPane(aClass);
+                addPane(pane, annotation);
+
+
+                Method[] methods = aClass.getDeclaredMethods();
+                for (Method method : methods) {
+                    FxNode fxNode = method.getDeclaredAnnotation(FxNode.class);
+                    if (fxNode != null) {
+                        System.out.println("识别到FxNode注解");
+                        method.setAccessible(true);
+                        Node node = (Node) method.invoke(pane, fxNode.parameter());
+                        pane.getChildren().add(node);
+                    }
+                }
+
+            }
+        }
+    }
+
+    private static void addPane(Pane pane, FxPane annotation) throws Exception {
+        FxContainerPane parentContainerPane = fxContainer.getPaneByName(annotation.parentName());
+        fxContainer.addPane(new FxContainerPane(annotation.name(), pane, parentContainerPane));
+        parentContainerPane.getPane().getChildren().add(pane);
+        System.out.println(annotation.name() + "成功注入");
+    }
+
+    private static Pane getPane(Class<?> aClass) throws Exception {
+
+        Pane pane = (Pane) aClass.newInstance();
+
+        LoadFxml loadFxml = aClass.getDeclaredAnnotation(LoadFxml.class);
+
+        if(loadFxml != null) {
+
+            System.out.println("从Fxml初始化" + loadFxml.fxmlFile()); pane = pane == null ? (Pane) aClass.newInstance() : pane;
+            FXMLLoader fxmlLoader = new FXMLLoader(pane.getClass().getResource(loadFxml.fxmlFile()));
+            fxmlLoader.setRoot(pane);
+            fxmlLoader.setController(pane);
+            try {
+                fxmlLoader.load();
+            } catch (Exception exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        return pane;
     }
 
 }
