@@ -14,7 +14,13 @@ import java.util.*;
 
 public class FxContainerPane {
 
+    private static final int INIT_CAP = 16;
+
+    private int size = 0;
+
     private Map<String, FxContainerNode<?>> nodeMap;
+
+    private FxContainerNode<?>[] fxContainerNodes = new FxContainerNode[INIT_CAP];
 
     private String name;
 
@@ -32,8 +38,25 @@ public class FxContainerPane {
         nodeMap = new HashMap<>();
     }
 
+    void sort() {
+        Arrays.sort(fxContainerNodes, 0, size);
+    }
+
     void addNode(FxContainerNode<?> node) {
         nodeMap.put(node.getName(), node);
+        if(size >= fxContainerNodes.length - 1) {
+            resize();
+        }
+        fxContainerNodes[size] = node;
+        size++;
+    }
+
+    private void resize() {
+        int oldSize = fxContainerNodes.length;
+        int newSize = oldSize << 1;
+        FxContainerNode<?>[] newNodes = new FxContainerNode<?>[newSize];
+        System.arraycopy(fxContainerNodes, 0, newNodes, 0, oldSize);
+        fxContainerNodes = newNodes;
     }
 
     public Map<String, FxContainerNode<?>> getNodeMap() {
@@ -74,5 +97,17 @@ public class FxContainerPane {
 
     public void setPane(Pane pane) {
         this.pane = pane;
+    }
+
+    public FxContainerNode<?>[] getFxContainerNodes() {
+        return fxContainerNodes;
+    }
+
+    public void setFxContainerNodes(FxContainerNode<?>[] fxContainerNodes) {
+        this.fxContainerNodes = fxContainerNodes;
+    }
+
+    public int size() {
+        return size;
     }
 }

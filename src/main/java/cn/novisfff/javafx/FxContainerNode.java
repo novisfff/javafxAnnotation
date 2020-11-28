@@ -1,6 +1,6 @@
 package cn.novisfff.javafx;
 
-public class FxContainerNode<T> {
+public class FxContainerNode<T> implements Comparable<FxContainerNode<T>> {
 
     private String name;
 
@@ -10,7 +10,7 @@ public class FxContainerNode<T> {
 
     private int index;
 
-    public FxContainerNode(String name, Class<T> classType, T[] nodes, int index) {
+    public FxContainerNode(String name, Class<T> classType, int index, T[] nodes) {
         this.name = name;
         this.classType = classType;
         this.nodes = nodes;
@@ -47,5 +47,13 @@ public class FxContainerNode<T> {
 
     public void setIndex(int index) {
         this.index = index;
+    }
+
+    @Override
+    public int compareTo(FxContainerNode<T> o) {
+        if(o == null) {
+            return Integer.MAX_VALUE;
+        }
+        return this.index - o.index;
     }
 }

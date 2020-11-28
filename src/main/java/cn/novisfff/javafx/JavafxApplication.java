@@ -1,15 +1,14 @@
 package cn.novisfff.javafx;
 
-import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**
@@ -22,12 +21,25 @@ import java.util.List;
 
 public class JavafxApplication {
 
+    /**
+     * root Pane
+     */
     private static Pane root;
 
+    /**
+     * primaryStage
+     */
     private static Stage primaryStage;
 
+    /**
+     * fxContainer, contain all FxNode
+     */
     private static FxContainer fxContainer;
 
+    /**
+     * get root
+     * @return Pane
+     */
     public static synchronized Pane getRootInstance() {
         if (root == null) {
             throw new NullPointerException("root is null");
@@ -35,6 +47,10 @@ public class JavafxApplication {
         return root;
     }
 
+    /**
+     * get primaryStage
+     * @return Stage
+     */
     public static synchronized Stage getStageInstance() {
         if (primaryStage == null) {
             throw new NullPointerException("primaryStage is null");
@@ -42,10 +58,21 @@ public class JavafxApplication {
         return primaryStage;
     }
 
+    /**
+     * run JavaFxApplication
+     * @param primarySources the Class of main
+     * @param primaryStage primaryStage
+     */
     public static synchronized void run(Class<?> primarySources, Stage primaryStage) {
         run(primarySources, primaryStage, null);
     }
 
+    /**
+     * run JavaFxApplication
+     * @param primarySources the Class of main
+     * @param primaryStage primaryStage
+     * @param args args
+     */
     public static synchronized void run(Class<?> primarySources, Stage primaryStage, String[] args) {
 
         root = new Pane();
@@ -66,40 +93,82 @@ public class JavafxApplication {
         }
     }
 
+    /**
+     * add Panes to Container and Application
+     * @param classPathList the .class file paths
+     * @throws Exception
+     */
     private static void addPanes(List<String> classPathList) throws Exception {
         for (String classPath : classPathList) {
 
             Class<?> aClass = Class.forName(classPath);
 
-            FxPane annotation = aClass.getDeclaredAnnotation(FxPane.class);
-            if (annotation != null) {
+            FxPane fxPaneAnnotation = aClass.getDeclaredAnnotation(FxPane.class);
+            if (fxPaneAnnotation != null) {
 
                 Pane pane = getPane(aClass);
-                addPane(pane, annotation);
-
-
-                Method[] methods = aClass.getDeclaredMethods();
-                for (Method method : methods) {
-                    FxNode fxNode = method.getDeclaredAnnotation(FxNode.class);
-                    if (fxNode != null) {
-                        System.out.println("识别到FxNode注解");
-                        method.setAccessible(true);
-                        Node node = (Node) method.invoke(pane, fxNode.parameter());
-                        pane.getChildren().add(node);
-                    }
-                }
+                FxContainerPane fxContainerPane = addPane(pane, fxPaneAnnotation);
+                addNode(aClass, fxContainerPane);
 
             }
         }
     }
 
-    private static void addPane(Pane pane, FxPane annotation) throws Exception {
-        FxContainerPane parentContainerPane = fxContainer.getPaneByName(annotation.parentName());
-        fxContainer.addPane(new FxContainerPane(annotation.name(), pane, parentContainerPane));
-        parentContainerPane.getPane().getChildren().add(pane);
-        System.out.println(annotation.name() + "成功注入");
+    /**
+     *
+     * @param aClass
+     * @param fxContainerPane
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     */
+    private static void addNode(Class<?> aClass, FxContainerPane fxContainerPane) throws InvocationTargetException, IllegalAccessException {
+        Method[] methods = aClass.getDeclaredMethods();
+        Pane pane = fxContainerPane.getPane();
+        for (Method method : methods) {
+            FxNode fxNodeAnnotation = method.getDeclaredAnnotation(FxNode.class);
+            if (fxNodeAnnotation != null) {
+                System.out.println("识别到FxNode注解");
+                method.setAccessible(true);
+                Node node = (Node) method.invoke(pane, fxNodeAnnotation.parameter());
+                fxContainerPane.addNode(new FxContainerNode<Node>(method.getName(), (Class<Node>) method.getReturnType(), fxNodeAnnotation.index(), new Node[]{node}));
+            }
+        }
+
+        fxContainerPane.sort();
+
+        for (FxContainerNode<?> fxContainerNode : fxContainerPane.getFxContainerNodes()) {
+            if(fxContainerNode == null) {
+                break;
+            }
+            for (Object node : fxContainerNode.getNodes()) {
+                pane.getChildren().add((Node)node);
+            }
+        }
+
     }
 
+    /**
+     * add Pane to fxContainer and return FxContainerPane
+     * @param pane Pane
+     * @param fxPaneAnnotation
+     * @return FxContainerPane
+     * @throws Exception
+     */
+    private static FxContainerPane addPane(Pane pane, FxPane fxPaneAnnotation) throws Exception {
+        FxContainerPane parentContainerPane = fxContainer.getPaneByName(fxPaneAnnotation.parentName());
+        FxContainerPane fxContainerPane = new FxContainerPane(fxPaneAnnotation.name(), pane, parentContainerPane);
+        fxContainer.addPane(fxContainerPane);
+        parentContainerPane.getPane().getChildren().add(pane);
+        System.out.println(fxPaneAnnotation.name() + "成功注入");
+        return fxContainerPane;
+    }
+
+    /**
+     * get Pane from class
+     * @param aClass type
+     * @return
+     * @throws Exception
+     */
     private static Pane getPane(Class<?> aClass) throws Exception {
 
         Pane pane = (Pane) aClass.newInstance();
